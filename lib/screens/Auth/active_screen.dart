@@ -277,8 +277,10 @@ class _ActiveScreenState extends State<ActiveScreen> {
                                     ),
                                   ),
                                 );
-                                // Navigate to login or home screen
-                                // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/main',
+                                );
                               }
                             },
                             style: ElevatedButton.styleFrom(
