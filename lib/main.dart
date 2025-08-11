@@ -4,6 +4,7 @@ import 'package:heaven_book_app/screens/Auth/login_screen.dart';
 import 'package:heaven_book_app/screens/Auth/register_screen.dart';
 import 'package:heaven_book_app/screens/Auth/reset_screen.dart';
 import 'package:heaven_book_app/screens/Home/home_screen.dart';
+import 'package:heaven_book_app/screens/Home/result_screen.dart';
 import 'package:heaven_book_app/screens/Orders/orders_screen.dart';
 import 'package:heaven_book_app/screens/Cart/cart_screen.dart';
 import 'package:heaven_book_app/screens/Profile/profile_screen.dart';
@@ -36,6 +37,7 @@ class MyApp extends StatelessWidget {
         '/order': (context) => const OrdersScreen(),
         '/cart': (context) => const CartScreen(),
         '/profile': (context) => const ProfileScreen(),
+        '/result': (context) => const ResultScreen(),
       },
     );
   }
@@ -73,7 +75,7 @@ class _MainScreenState extends State<MainScreen> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               spreadRadius: 2,
               offset: const Offset(0, -2),
@@ -154,7 +156,10 @@ class _MainScreenState extends State<MainScreen> {
             child: Icon(
               isSelected ? activeIcon : icon,
               size: 28,
-              color: isSelected ? AppColors.text : Colors.grey.withOpacity(0.6),
+              color:
+                  isSelected
+                      ? AppColors.text
+                      : Colors.grey.withValues(alpha: 0.6),
             ),
           ),
           // Badge for cart
