@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:heaven_book_app/themes/app_colors.dart';
+import '../../widgets/book_section_widget.dart';
 import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
@@ -14,6 +15,83 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController _bannerController = PageController();
   Timer? _timer;
   int _currentPage = 0;
+
+  // Sample data for book sections
+  final List<Map<String, dynamic>> booksILoveData = [
+    {
+      'title': 'The Great Gatsby',
+      'author': 'F. Scott Fitzgerald',
+      'price': '\$12.99',
+      'rating': 4.5,
+      'isFavorite': true,
+    },
+    {
+      'title': 'To Kill a Mockingbird',
+      'author': 'Harper Lee',
+      'price': '\$10.99',
+      'rating': 4.8,
+      'isFavorite': false,
+    },
+    {
+      'title': 'Pride and Prejudice',
+      'author': 'Jane Austen',
+      'price': '\$9.99',
+      'rating': 4.6,
+      'isFavorite': true,
+    },
+    {
+      'title': 'The Catcher in the Rye',
+      'author': 'J.D. Salinger',
+      'price': '\$11.99',
+      'rating': 4.3,
+      'isFavorite': false,
+    },
+    {
+      'title': 'Lord of the Flies',
+      'author': 'William Golding',
+      'price': '\$8.99',
+      'rating': 4.2,
+      'isFavorite': true,
+    },
+  ];
+
+  final List<Map<String, dynamic>> popularBooksData = [
+    {
+      'title': '1984',
+      'author': 'George Orwell',
+      'price': '\$15.99',
+      'rating': 4.8,
+      'isFavorite': false,
+    },
+    {
+      'title': 'Brave New World',
+      'author': 'Aldous Huxley',
+      'price': '\$13.99',
+      'rating': 4.5,
+      'isFavorite': true,
+    },
+    {
+      'title': 'Fahrenheit 451',
+      'author': 'Ray Bradbury',
+      'price': '\$12.99',
+      'rating': 4.7,
+      'isFavorite': false,
+    },
+    {
+      'title': 'The Handmaid\'s Tale',
+      'author': 'Margaret Atwood',
+      'price': '\$14.99',
+      'rating': 4.6,
+      'isFavorite': true,
+    },
+    {
+      'title': 'Animal Farm',
+      'author': 'George Orwell',
+      'price': '\$9.99',
+      'rating': 4.4,
+      'isFavorite': false,
+    },
+  ];
 
   @override
   void initState() {
@@ -91,17 +169,57 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Featured Books Section
+                  // Books I Love Section
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildBookSection('Featured Books'),
+                    child: BookSectionWidget(
+                      title: 'Books I Love',
+                      books: booksILoveData,
+                      onViewAll: () {
+                        // Navigate to Books I Love page
+                      },
+                      onBookTap: (book) {
+                        // Navigate to book detail
+                        Navigator.pushNamed(
+                          context,
+                          '/detail',
+                          arguments: book,
+                        );
+                      },
+                      onFavoriteTap: (book) {
+                        // Handle favorite toggle
+                        setState(() {
+                          book['isFavorite'] = !(book['isFavorite'] ?? false);
+                        });
+                      },
+                    ),
                   ),
                   const SizedBox(height: 24),
 
                   // Popular Books Section
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _buildBookSection('Popular Books'),
+                    child: BookSectionWidget(
+                      title: 'Popular Books',
+                      books: popularBooksData,
+                      onViewAll: () {
+                        // Navigate to Popular Books page
+                      },
+                      onBookTap: (book) {
+                        // Navigate to book detail
+                        Navigator.pushNamed(
+                          context,
+                          '/detail',
+                          arguments: book,
+                        );
+                      },
+                      onFavoriteTap: (book) {
+                        // Handle favorite toggle
+                        setState(() {
+                          book['isFavorite'] = !(book['isFavorite'] ?? false);
+                        });
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -845,273 +963,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBookSection(String sectionTitle) {
-    // Sample data for different sections
-    final Map<String, List<Map<String, dynamic>>> sectionData = {
-      'Featured Books': [
-        {
-          'title': 'The Great Gatsby',
-          'author': 'F. Scott Fitzgerald',
-          'price': '\$12.99',
-          'rating': 4.5,
-          'isFavorite': true,
-        },
-        {
-          'title': 'To Kill a Mockingbird',
-          'author': 'Harper Lee',
-          'price': '\$10.99',
-          'rating': 4.8,
-          'isFavorite': false,
-        },
-        {
-          'title': 'Pride and Prejudice',
-          'author': 'Jane Austen',
-          'price': '\$9.99',
-          'rating': 4.6,
-          'isFavorite': true,
-        },
-        {
-          'title': 'The Catcher in the Rye',
-          'author': 'J.D. Salinger',
-          'price': '\$11.99',
-          'rating': 4.3,
-          'isFavorite': false,
-        },
-        {
-          'title': 'Lord of the Flies',
-          'author': 'William Golding',
-          'price': '\$8.99',
-          'rating': 4.2,
-          'isFavorite': true,
-        },
-      ],
-      'Popular Books': [
-        {
-          'title': '1984',
-          'author': 'George Orwell',
-          'price': '\$15.99',
-          'rating': 4.8,
-          'isFavorite': false,
-        },
-        {
-          'title': 'Brave New World',
-          'author': 'Aldous Huxley',
-          'price': '\$13.99',
-          'rating': 4.5,
-          'isFavorite': true,
-        },
-        {
-          'title': 'Fahrenheit 451',
-          'author': 'Ray Bradbury',
-          'price': '\$12.99',
-          'rating': 4.7,
-          'isFavorite': false,
-        },
-        {
-          'title': 'The Handmaid\'s Tale',
-          'author': 'Margaret Atwood',
-          'price': '\$14.99',
-          'rating': 4.6,
-          'isFavorite': true,
-        },
-        {
-          'title': 'Animal Farm',
-          'author': 'George Orwell',
-          'price': '\$9.99',
-          'rating': 4.4,
-          'isFavorite': false,
-        },
-      ],
-    };
-
-    final books = sectionData[sectionTitle] ?? [];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              sectionTitle,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.text,
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                // Navigate to section with title
-                // Navigator.push(context, MaterialPageRoute(
-                //   builder: (context) => ResultScreen(sectionTitle: sectionTitle),
-                // ));
-              },
-              child: const Text(
-                'View All',
-                style: TextStyle(
-                  color: AppColors.primaryDark,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 300,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: books.length,
-            itemBuilder: (context, index) {
-              final book = books[index];
-              return _buildBookCard(
-                title: book['title'],
-                author: book['author'],
-                price: book['price'],
-                rating: book['rating'],
-                isFavorite: book['isFavorite'],
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBookCard({
-    required String title,
-    required String author,
-    required String price,
-    required double rating,
-    required bool isFavorite,
-  }) {
-    return Container(
-      width: 160,
-      height: 240,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Container(
-                height: 180,
-                decoration: BoxDecoration(
-                  color: AppColors.card,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(16),
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.book,
-                    size: 60,
-                    color: AppColors.primaryDark,
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: IconButton(
-                    icon: Icon(
-                      isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.grey,
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      // Handle favorite toggle
-                    },
-                    padding: const EdgeInsets.all(8),
-                    constraints: const BoxConstraints(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.text,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    author,
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        price,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primaryDark,
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 16),
-                          const SizedBox(width: 2),
-                          Text(
-                            rating.toString(),
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: AppColors.text,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBestsellersSection() {
     final List<Map<String, dynamic>> bestsellers = [
       {
@@ -1265,244 +1116,262 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBestsellerCard(Map<String, dynamic> book) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: book['rank'] == 1 ? Colors.amber : Colors.grey.shade200,
-          width: book['rank'] == 1 ? 2 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color:
-                book['rank'] == 1
-                    ? Colors.amber.withOpacity(0.15)
-                    : Colors.black.withOpacity(0.08),
-            blurRadius: book['rank'] == 1 ? 15 : 10,
-            offset: const Offset(0, 3),
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(context, '/detail', arguments: book);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: book['rank'] == 1 ? Colors.amber : Colors.grey.shade200,
+            width: book['rank'] == 1 ? 2 : 1,
           ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Main content
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Book Cover (increased size)
-                Container(
-                  width: 80,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        (book['color'] as Color).withOpacity(0.3),
-                        (book['color'] as Color).withOpacity(0.1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.menu_book,
-                      size: 40,
-                      color: book['color'] as Color,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 16),
-
-                // Book Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          if (book['isNew'])
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: const Text(
-                                'NEW',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          if (book['isNew']) const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              book['title'],
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.text,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+          boxShadow: [
+            BoxShadow(
+              color:
+                  book['rank'] == 1
+                      ? Colors.amber.withOpacity(0.15)
+                      : Colors.black.withOpacity(0.08),
+              blurRadius: book['rank'] == 1 ? 15 : 10,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Main content
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Book Cover
+                  Container(
+                    width: 80,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          (book['color'] as Color).withOpacity(0.3),
+                          (book['color'] as Color).withOpacity(0.1),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${book['author']} • ${book['category']}',
-                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.menu_book,
+                        size: 40,
+                        color: book['color'] as Color,
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${book['rating']} (${_formatNumber(book['reviewCount'])})',
-                            style: const TextStyle(fontSize: 12),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.blue.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.local_fire_department,
-                                  color: Colors.red.shade400,
-                                  size: 12,
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // Book Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            if (book['isNew'])
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
                                 ),
-                                const SizedBox(width: 2),
-                                Text(
-                                  '${book['salesCount']} sold',
+                                decoration: BoxDecoration(
+                                  color: Colors.green,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Text(
+                                  'NEW',
                                   style: TextStyle(
+                                    color: Colors.white,
                                     fontSize: 10,
-                                    color: Colors.red.shade600,
-                                    fontWeight: FontWeight.w600,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            if (book['isNew']) const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                book['title'],
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.text,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${book['author']} • ${book['category']}',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${book['rating']} (${_formatNumber(book['reviewCount'])})',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                            const SizedBox(width: 20),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.local_fire_department,
+                                    color: Colors.red.shade400,
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    '${book['salesCount']} sold',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.red.shade600,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '\$${book['price'].toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primaryDark,
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '\$${book['price'].toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primaryDark,
-                                ),
-                              ),
-                              if (book['originalPrice'] != null)
-                                Text(
-                                  '\$${book['originalPrice'].toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[500],
-                                    decoration: TextDecoration.lineThrough,
+                            GestureDetector(
+                              onTap: () {
+                                // Add to cart action - prevent navigation
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '${book['title']} added to cart!',
+                                    ),
+                                    backgroundColor: AppColors.primary,
                                   ),
+                                );
+                              },
+                              child: Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.15),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
                                 ),
-                            ],
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Text(
-                              'Add to Cart',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
+                                child: const Icon(
+                                  Icons.add_shopping_cart_rounded,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Rank Badge positioned at top-left corner
-          Positioned(
-            top: -2,
-            left: -2,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors:
-                      book['rank'] == 1
-                          ? [Colors.amber.shade400, Colors.orange.shade600]
-                          : book['rank'] == 2
-                          ? [Colors.grey.shade300, Colors.grey.shade500]
-                          : [
-                            Colors.orange.shade300,
-                            Colors.deepOrange.shade500,
                           ],
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              child: Center(
-                child: Text(
-                  '${book['rank']}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+            ),
+
+            // Rank Badge
+            Positioned(
+              top: 5,
+              left: 5,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors:
+                        book['rank'] == 1
+                            ? [Colors.amber.shade400, Colors.orange.shade600]
+                            : book['rank'] == 2
+                            ? [Colors.grey.shade300, Colors.grey.shade500]
+                            : [
+                              Colors.orange.shade300,
+                              Colors.deepOrange.shade500,
+                            ],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    '#${book['rank']}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
