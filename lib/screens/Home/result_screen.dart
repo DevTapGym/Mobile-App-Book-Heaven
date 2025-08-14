@@ -586,7 +586,7 @@ class _ResultScreenState extends State<ResultScreen> {
           crossAxisCount: 2,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 0.65,
+          childAspectRatio: 0.55,
         ),
         itemCount: _filteredBooks.length,
         itemBuilder: (context, index) {
@@ -626,7 +626,7 @@ class _ResultScreenState extends State<ResultScreen> {
           Stack(
             children: [
               Container(
-                height: 150,
+                height: 160,
                 decoration: BoxDecoration(
                   color: AppColors.card,
                   borderRadius: const BorderRadius.vertical(
@@ -659,7 +659,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       '-${book['discount']}%',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -706,7 +706,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   Text(
                     book['title'],
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.text,
                     ),
@@ -716,7 +716,7 @@ class _ResultScreenState extends State<ResultScreen> {
                   const SizedBox(height: 4),
                   Text(
                     book['author'],
-                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -729,6 +729,13 @@ class _ResultScreenState extends State<ResultScreen> {
                         book['rating'].toString(),
                         style: const TextStyle(fontSize: 12),
                       ),
+                      const SizedBox(width: 6),
+                      Container(width: 1, height: 12, color: Colors.grey[600]),
+                      const SizedBox(width: 6),
+                      Text(
+                        '22 sold',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[800]),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -737,7 +744,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       Text(
                         '\$${book['price'].toStringAsFixed(2)}',
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primaryDark,
                         ),
@@ -748,7 +755,7 @@ class _ResultScreenState extends State<ResultScreen> {
                           child: Text(
                             '\$${book['originalPrice'].toStringAsFixed(2)}',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 14,
                               color: Colors.grey[500],
                               decoration: TextDecoration.lineThrough,
                             ),
@@ -786,8 +793,8 @@ class _ResultScreenState extends State<ResultScreen> {
           Stack(
             children: [
               Container(
-                width: 80,
-                height: 120,
+                width: 100,
+                height: 160,
                 decoration: BoxDecoration(
                   color: AppColors.card,
                   borderRadius: BorderRadius.circular(8),
@@ -802,8 +809,8 @@ class _ResultScreenState extends State<ResultScreen> {
               ),
               if (book['discount'] > 0)
                 Positioned(
-                  top: 4,
-                  right: 4,
+                  top: 6,
+                  right: 6,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 4,
@@ -817,7 +824,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       '-${book['discount']}%',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 8,
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -833,15 +840,29 @@ class _ResultScreenState extends State<ResultScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  book['title'],
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.text,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        book['title'],
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.text,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.favorite_border,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {},
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -866,43 +887,38 @@ class _ResultScreenState extends State<ResultScreen> {
                       '${book['rating']} (${book['reviewCount']})',
                       style: const TextStyle(fontSize: 12),
                     ),
+                    const SizedBox(width: 4),
+                    Container(width: 1, height: 16, color: Colors.grey[600]),
+                    const SizedBox(width: 4),
+                    Text(
+                      '23 sold',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[800]),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          '\$${book['price'].toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.primaryDark,
+                    Text(
+                      '\$${book['price'].toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primaryDark,
+                      ),
+                    ),
+                    if (book['originalPrice'] != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text(
+                          '\$${book['originalPrice'].toStringAsFixed(2)}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[500],
+                            decoration: TextDecoration.lineThrough,
                           ),
                         ),
-                        if (book['originalPrice'] != null)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8),
-                            child: Text(
-                              '\$${book['originalPrice'].toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[500],
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.favorite_border,
-                        color: Colors.grey,
                       ),
-                      onPressed: () {},
-                    ),
                   ],
                 ),
               ],

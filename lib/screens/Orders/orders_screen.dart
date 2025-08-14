@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:heaven_book_app/themes/app_colors.dart';
-import 'package:heaven_book_app/models/order_model.dart';
+import '../../themes/app_colors.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -10,16 +9,21 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<Order> _orders = [];
-  bool _isLoading = false;
+
+  // Track which orders have expanded items view
+  Set<String> expandedOrders = {};
+
+  // Date range filter variables
+  DateTimeRange? _selectedDateRange;
+  List<Map<String, dynamic>> _filteredOrders = [];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
-    _loadOrders();
+    _tabController = TabController(length: 4, vsync: this);
+    _filteredOrders = List.from(allOrders);
   }
 
   @override
@@ -28,275 +32,572 @@ class _OrdersScreenState extends State<OrdersScreen>
     super.dispose();
   }
 
-  void _loadOrders() {
+  // Hardcoded order data
+  final List<Map<String, dynamic>> allOrders = [
+    {
+      'id': 'ORD-001',
+      'status': 'Processing',
+      'date': '2024-08-10',
+      'total': 45.99,
+      'items': [
+        {'title': 'The Great Gatsby', 'price': 12.99, 'quantity': 1},
+        {'title': 'To Kill a Mockingbird', 'price': 15.99, 'quantity': 1},
+        {'title': '1984', 'price': 17.01, 'quantity': 1},
+      ],
+    },
+    {
+      'id': 'ORD-003',
+      'status': 'Delivered',
+      'date': '2024-08-05',
+      'total': 28.97,
+      'items': [
+        {'title': 'Pride and Prejudice', 'price': 13.99, 'quantity': 1},
+        {'title': 'The Catcher in the Rye', 'price': 14.98, 'quantity': 1},
+      ],
+    },
+    {
+      'id': 'ORD-004',
+      'status': 'Cancelled',
+      'date': '2024-08-03',
+      'total': 19.99,
+      'items': [
+        {'title': 'Lord of the Flies', 'price': 19.99, 'quantity': 1},
+      ],
+    },
+    {
+      'id': 'ORD-005',
+      'status': 'Delivered',
+      'date': '2024-08-01',
+      'total': 67.95,
+      'items': [
+        {'title': 'Dune', 'price': 22.99, 'quantity': 1},
+        {'title': 'Foundation', 'price': 21.99, 'quantity': 1},
+        {'title': 'Ender\'s Game', 'price': 22.97, 'quantity': 1},
+      ],
+    },
+  ];
+
+  List<Map<String, dynamic>> getOrdersByStatus(String status) {
+    final ordersToFilter =
+        _selectedDateRange != null ? _filteredOrders : allOrders;
+    return ordersToFilter.where((order) => order['status'] == status).toList();
+  }
+
+  void _showDateRangeFilter() async {
+    DateTime? tempStartDate = _selectedDateRange?.start;
+    DateTime? tempEndDate = _selectedDateRange?.end;
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Container(
+                width: 450,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.date_range,
+                          color: AppColors.primary,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Filter Orders by Date Range',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Date selection buttons
+                    Row(
+                      children: [
+                        // Start Date Button
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () async {
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: tempStartDate ?? DateTime.now(),
+                                firstDate: DateTime(2020),
+                                lastDate: tempEndDate ?? DateTime.now(),
+                                helpText: 'Select Start Date',
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: ColorScheme.light(
+                                        primary: AppColors.primary,
+                                        onPrimary: Colors.white,
+                                        surface: Colors.white,
+                                        onSurface: Colors.black87,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (picked != null) {
+                                setDialogState(() {
+                                  tempStartDate = picked;
+                                  // If end date is before start date, reset it
+                                  if (tempEndDate != null &&
+                                      tempEndDate!.isBefore(picked)) {
+                                    tempEndDate = null;
+                                  }
+                                });
+                              }
+                            },
+                            icon: Icon(
+                              Icons.calendar_today,
+                              color:
+                                  tempStartDate != null
+                                      ? AppColors.primary
+                                      : Colors.grey[600],
+                              size: 18,
+                            ),
+                            label: Text(
+                              tempStartDate != null
+                                  ? '${tempStartDate!.day}/${tempStartDate!.month}/${tempStartDate!.year}'
+                                  : 'Start Date',
+                              style: TextStyle(
+                                color:
+                                    tempStartDate != null
+                                        ? AppColors.primary
+                                        : Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color:
+                                    tempStartDate != null
+                                        ? AppColors.primary
+                                        : Colors.grey[400]!,
+                                width: 1.5,
+                              ),
+                              backgroundColor:
+                                  tempStartDate != null
+                                      ? AppColors.primary.withOpacity(0.05)
+                                      : null,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        // To text
+                        Text(
+                          'to',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        // End Date Button
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed:
+                                tempStartDate != null
+                                    ? () async {
+                                      final DateTime?
+                                      picked = await showDatePicker(
+                                        context: context,
+                                        initialDate:
+                                            tempEndDate ?? tempStartDate!,
+                                        firstDate: tempStartDate!,
+                                        lastDate: DateTime.now(),
+                                        helpText: 'Select End Date',
+                                        builder: (context, child) {
+                                          return Theme(
+                                            data: Theme.of(context).copyWith(
+                                              colorScheme: ColorScheme.light(
+                                                primary: AppColors.primary,
+                                                onPrimary: Colors.white,
+                                                surface: Colors.white,
+                                                onSurface: Colors.black87,
+                                              ),
+                                            ),
+                                            child: child!,
+                                          );
+                                        },
+                                      );
+                                      if (picked != null) {
+                                        setDialogState(() {
+                                          tempEndDate = picked;
+                                        });
+                                      }
+                                    }
+                                    : null,
+                            icon: Icon(
+                              Icons.calendar_today,
+                              color:
+                                  tempEndDate != null
+                                      ? AppColors.primary
+                                      : Colors.grey[400],
+                              size: 18,
+                            ),
+                            label: Text(
+                              tempEndDate != null
+                                  ? '${tempEndDate!.day}/${tempEndDate!.month}/${tempEndDate!.year}'
+                                  : 'End Date',
+                              style: TextStyle(
+                                color:
+                                    tempEndDate != null
+                                        ? AppColors.primary
+                                        : Colors.grey[400],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color:
+                                    tempEndDate != null
+                                        ? AppColors.primary
+                                        : Colors.grey[400]!,
+                                width: 1.5,
+                              ),
+                              backgroundColor:
+                                  tempEndDate != null
+                                      ? AppColors.primary.withOpacity(0.05)
+                                      : null,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Current selection display
+                    if (tempStartDate != null && tempEndDate != null)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.event,
+                                  color: AppColors.primary,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Selected Date Range:',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${tempStartDate!.day}/${tempStartDate!.month}/${tempStartDate!.year}',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                Text(
+                                  '  to  ',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                Text(
+                                  '${tempEndDate!.day}/${tempEndDate!.month}/${tempEndDate!.year}',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    const SizedBox(height: 24),
+
+                    // Action Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        // Cancel Button
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 12),
+
+                        // Apply Button
+                        ElevatedButton(
+                          onPressed:
+                              (tempStartDate != null && tempEndDate != null)
+                                  ? () {
+                                    setState(() {
+                                      _selectedDateRange = DateTimeRange(
+                                        start: tempStartDate!,
+                                        end: tempEndDate!,
+                                      );
+                                      _filterOrdersByDateRange();
+                                    });
+                                    Navigator.pop(context);
+                                  }
+                                  : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor: Colors.grey[300],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filter',
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _filterOrdersByDateRange() {
+    if (_selectedDateRange == null) {
+      _filteredOrders = List.from(allOrders);
+      return;
+    }
+
+    _filteredOrders =
+        allOrders.where((order) {
+          final orderDate = DateTime.parse(order['date']);
+          return orderDate.isAfter(
+                _selectedDateRange!.start.subtract(const Duration(days: 1)),
+              ) &&
+              orderDate.isBefore(
+                _selectedDateRange!.end.add(const Duration(days: 1)),
+              );
+        }).toList();
+  }
+
+  void _clearDateFilter() {
     setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate loading orders with sample data
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _orders = _getSampleOrders();
-        _isLoading = false;
-      });
+      _selectedDateRange = null;
+      _filteredOrders = List.from(allOrders);
     });
   }
 
-  List<Order> _getSampleOrders() {
-    return [
-      Order(
-        id: 'ORD-001',
-        items: [
-          OrderItem(
-            bookId: '1',
-            bookTitle: 'The Great Gatsby',
-            bookImage: 'assets/images/Logo.png',
-            author: 'F. Scott Fitzgerald',
-            price: 15.99,
-            quantity: 1,
-          ),
-          OrderItem(
-            bookId: '2',
-            bookTitle: 'To Kill a Mockingbird',
-            bookImage: 'assets/images/Logo.png',
-            author: 'Harper Lee',
-            price: 12.99,
-            quantity: 2,
-          ),
-        ],
-        totalAmount: 41.97,
-        shippingFee: 5.00,
-        discount: 3.00,
-        status: OrderStatus.delivered,
-        orderDate: DateTime.now().subtract(const Duration(days: 7)),
-        deliveryDate: DateTime.now().subtract(const Duration(days: 2)),
-        shippingAddress: '123 Main Street, City, State 12345',
-        customerName: 'Nguyễn Văn A',
-        customerPhone: '+84 123 456 789',
-        trackingNumber: 'TRK123456789',
-      ),
-      Order(
-        id: 'ORD-002',
-        items: [
-          OrderItem(
-            bookId: '3',
-            bookTitle: '1984',
-            bookImage: 'assets/images/Logo.png',
-            author: 'George Orwell',
-            price: 13.99,
-            quantity: 1,
-          ),
-        ],
-        totalAmount: 13.99,
-        shippingFee: 5.00,
-        discount: 0.00,
-        status: OrderStatus.shipped,
-        orderDate: DateTime.now().subtract(const Duration(days: 3)),
-        shippingAddress: '456 Oak Avenue, City, State 54321',
-        customerName: 'Trần Thị B',
-        customerPhone: '+84 987 654 321',
-        trackingNumber: 'TRK987654321',
-      ),
-      Order(
-        id: 'ORD-003',
-        items: [
-          OrderItem(
-            bookId: '4',
-            bookTitle: 'Pride and Prejudice',
-            bookImage: 'assets/images/Logo.png',
-            author: 'Jane Austen',
-            price: 11.99,
-            quantity: 1,
-          ),
-        ],
-        totalAmount: 11.99,
-        shippingFee: 5.00,
-        status: OrderStatus.processing,
-        orderDate: DateTime.now().subtract(const Duration(days: 1)),
-        shippingAddress: '789 Elm Street, City, State 98765',
-        customerName: 'Lê Minh C',
-        customerPhone: '+84 555 123 456',
-      ),
-      Order(
-        id: 'ORD-004',
-        items: [
-          OrderItem(
-            bookId: '5',
-            bookTitle: 'The Catcher in the Rye',
-            bookImage: 'assets/images/Logo.png',
-            author: 'J.D. Salinger',
-            price: 14.99,
-            quantity: 1,
-          ),
-        ],
-        totalAmount: 14.99,
-        shippingFee: 5.00,
-        status: OrderStatus.pending,
-        orderDate: DateTime.now(),
-        shippingAddress: '321 Pine Road, City, State 13579',
-        customerName: 'Phạm Thị D',
-        customerPhone: '+84 111 222 333',
-      ),
-    ];
-  }
+  Widget _buildDateFilterChip() {
+    if (_selectedDateRange == null) return const SizedBox.shrink();
 
-  List<Order> _getFilteredOrders(OrderStatus? status) {
-    if (status == null) return _orders;
-    return _orders.where((order) => order.status == status).toList();
-  }
-
-  Color _getStatusColor(OrderStatus status) {
-    switch (status) {
-      case OrderStatus.pending:
-        return Colors.orange;
-      case OrderStatus.confirmed:
-        return Colors.blue;
-      case OrderStatus.processing:
-        return Colors.purple;
-      case OrderStatus.shipped:
-        return Colors.indigo;
-      case OrderStatus.delivered:
-        return Colors.green;
-      case OrderStatus.cancelled:
-        return Colors.red;
-    }
-  }
-
-  IconData _getStatusIcon(OrderStatus status) {
-    switch (status) {
-      case OrderStatus.pending:
-        return Icons.pending;
-      case OrderStatus.confirmed:
-        return Icons.check_circle_outline;
-      case OrderStatus.processing:
-        return Icons.autorenew;
-      case OrderStatus.shipped:
-        return Icons.local_shipping;
-      case OrderStatus.delivered:
-        return Icons.done_all;
-      case OrderStatus.cancelled:
-        return Icons.cancel;
-    }
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Chip(
+        backgroundColor: AppColors.primary.withOpacity(0.1),
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.date_range, size: 16, color: AppColors.primary),
+            const SizedBox(width: 4),
+            Text(
+              '${_selectedDateRange!.start.day}/${_selectedDateRange!.start.month}/${_selectedDateRange!.start.year} - ${_selectedDateRange!.end.day}/${_selectedDateRange!.end.month}/${_selectedDateRange!.end.year}',
+              style: TextStyle(
+                color: AppColors.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        deleteIcon: Icon(Icons.close, size: 16, color: AppColors.primary),
+        onDeleted: _clearDateFilter,
+        side: BorderSide(color: AppColors.primary.withOpacity(0.3), width: 1),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        title: const Text(
-          'Đơn hàng của tôi',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+        automaticallyImplyLeading: false,
         centerTitle: true,
+        title: Text(
+          'My Orders',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            color: Colors.white,
+            fontSize: 24,
+            shadows: [
+              Shadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+        ),
+        backgroundColor: AppColors.primary,
+        elevation: 0,
         actions: [
-          IconButton(onPressed: _loadOrders, icon: const Icon(Icons.refresh)),
+          IconButton(
+            onPressed: _showDateRangeFilter,
+            icon: Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: const Icon(
+                Icons.date_range,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+            tooltip: 'Filter by date range',
+          ),
+          const SizedBox(width: 8),
         ],
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: true,
-          indicatorColor: Colors.white,
+          indicatorColor: AppColors.background,
+          labelColor: AppColors.background,
+          unselectedLabelColor: Colors.white60,
           indicatorWeight: 3,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          labelStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          unselectedLabelStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-          ),
-          tabs: const [
-            Tab(text: 'Tất cả'),
-            Tab(text: 'Chờ xác nhận'),
-            Tab(text: 'Đang xử lý'),
-            Tab(text: 'Đang giao'),
-            Tab(text: 'Đã giao'),
-            Tab(text: 'Đã hủy'),
+          isScrollable: false,
+          tabAlignment: TabAlignment.fill,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+          tabs: [
+            Tab(
+              child: Container(
+                alignment: Alignment.center,
+                child: const Text(
+                  'All',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+            Tab(
+              child: Container(
+                alignment: Alignment.center,
+                child: const Text(
+                  'Processing',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+            Tab(
+              child: Container(
+                alignment: Alignment.center,
+                child: const Text(
+                  'Shipped',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+            Tab(
+              child: Container(
+                alignment: Alignment.center,
+                child: const Text(
+                  'Delivered',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
           ],
         ),
       ),
-      body:
-          _isLoading
-              ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              )
-              : TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildOrdersList(_getFilteredOrders(null)),
-                  _buildOrdersList(_getFilteredOrders(OrderStatus.pending)),
-                  _buildOrdersList(_getFilteredOrders(OrderStatus.processing)),
-                  _buildOrdersList(_getFilteredOrders(OrderStatus.shipped)),
-                  _buildOrdersList(_getFilteredOrders(OrderStatus.delivered)),
-                  _buildOrdersList(_getFilteredOrders(OrderStatus.cancelled)),
-                ],
-              ),
-    );
-  }
-
-  Widget _buildOrdersList(List<Order> orders) {
-    if (orders.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        _loadOrders();
-      },
-      color: AppColors.primary,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: orders.length,
-        itemBuilder: (context, index) {
-          final order = orders[index];
-          return _buildOrderCard(order);
-        },
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      body: Column(
         children: [
-          Icon(Icons.shopping_bag_outlined, size: 80, color: Colors.grey[400]),
-          const SizedBox(height: 16),
-          Text(
-            'Chưa có đơn hàng nào',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Hãy đặt mua những cuốn sách yêu thích\ncủa bạn ngay hôm nay!',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () {
-              // Navigate to home or books screen
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-            ),
-            child: const Text(
-              'Khám phá sách',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          // Date filter chip
+          _buildDateFilterChip(),
+
+          // Tab bar view
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildOrderList(
+                  _selectedDateRange != null ? _filteredOrders : allOrders,
+                ),
+                _buildOrderList(getOrdersByStatus('Processing')),
+                _buildOrderList(getOrdersByStatus('Shipped')),
+                _buildOrderList(getOrdersByStatus('Delivered')),
+              ],
             ),
           ),
         ],
@@ -304,219 +605,291 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
-  Widget _buildOrderCard(Order order) {
+  Widget _buildOrderList(List<Map<String, dynamic>> orders) {
+    if (orders.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(60),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 60,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No Orders Yet',
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.grey[800],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'You haven\'t placed any orders yet.\nStart shopping to see your orders here!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () {},
+                icon: const Icon(
+                  Icons.shopping_bag,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                label: Text(
+                  'Shop Now!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 4,
+                  shadowColor: Colors.black.withValues(alpha: 0.3),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        return _buildOrderCard(orders[index]);
+      },
+    );
+  }
+
+  Widget _buildOrderCard(Map<String, dynamic> order) {
+    final isExpanded = expandedOrders.contains(order['id']);
+    final items = order['items'] as List;
+    final itemsToShow = isExpanded ? items : items.take(1).toList();
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        children: [
-          // Order header
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-              color: Colors.white,
-            ),
-            child: Row(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Order Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Đơn hàng #${order.id}',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.text,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Đặt ngày: ${_formatDate(order.orderDate)}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                      ),
-                    ],
+                Text(
+                  'Order ${order['id']}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _getStatusColor(order.status).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+                _buildStatusChip(order['status']),
+              ],
+            ),
+            Text(
+              'Date: ${order['date']}',
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 20),
+
+            // Order Items (show only first item or all items based on expansion)
+            ...itemsToShow
+                .map<Widget>((item) => _buildOrderItem(item))
+                .toList(),
+
+            // Show More/Less button if more than 1 item
+            if (items.length > 1)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (isExpanded) {
+                        expandedOrders.remove(order['id']);
+                      } else {
+                        expandedOrders.add(order['id']);
+                      }
+                    });
+                  },
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        _getStatusIcon(order.status),
-                        size: 14,
-                        color: _getStatusColor(order.status),
+                        isExpanded ? Icons.expand_less : Icons.expand_more,
+                        color: AppColors.primary,
+                        size: 20,
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        order.statusText,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: _getStatusColor(order.status),
+                        isExpanded
+                            ? 'Show Less'
+                            : 'Show More (${items.length - 1} more items)',
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          // Order items
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: order.items.length,
-            itemBuilder: (context, index) {
-              final item = order.items[index];
-              return _buildOrderItem(item);
-            },
-          ),
-          const Divider(height: 1),
-          // Order summary and actions
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
+              ),
+
+            const Divider(height: 24),
+
+            // Order Summary
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Tổng cộng (${order.items.length} sản phẩm):',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: AppColors.text,
-                      ),
-                    ),
-                    Text(
-                      '\$${order.finalAmount.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
+                const Text(
+                  'Total Amount',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _showOrderDetails(order),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.primary),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text(
-                          'Chi tiết',
-                          style: TextStyle(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    if (order.status == OrderStatus.delivered)
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _showReviewDialog(order),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'Đánh giá',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      )
-                    else if (order.status == OrderStatus.shipped)
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _trackOrder(order),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'Theo dõi',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      )
-                    else if (order.status == OrderStatus.pending)
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _cancelOrder(order),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: const Text(
-                            'Hủy đơn',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      ),
-                  ],
+                Text(
+                  '\$${order['total'].toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+
+            const SizedBox(height: 12),
+
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => {},
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'View Details',
+                      style: TextStyle(color: AppColors.primary),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                if (order['status'] == 'Delivered')
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Re-order',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                if (order['status'] == 'Processing')
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel Order',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildOrderItem(OrderItem item) {
+  Widget _buildOrderItem(Map<String, dynamic> item) {
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
           Container(
-            width: 60,
-            height: 80,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
               color: AppColors.card,
               borderRadius: BorderRadius.circular(8),
-              image: DecorationImage(
-                image: AssetImage(item.bookImage),
-                fit: BoxFit.cover,
-              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.16),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
+            child: const Icon(Icons.book, color: AppColors.primary),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -524,38 +897,17 @@ class _OrdersScreenState extends State<OrdersScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.bookTitle,
+                  item['title'],
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.text,
+                    fontWeight: FontWeight.w500,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Tác giả: ${item.author}',
+                  'Qty: ${item['quantity']} × \$${item['price'].toStringAsFixed(2)}',
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '\$${item.price.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    Text(
-                      'x${item.quantity}',
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),
@@ -564,241 +916,46 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
-  }
+  Widget _buildStatusChip(String status) {
+    Color backgroundColor;
+    Color textColor;
 
-  void _showOrderDetails(Order order) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    switch (status) {
+      case 'Processing':
+        backgroundColor = Colors.orange.shade100;
+        textColor = Colors.orange.shade700;
+        break;
+      case 'Shipped':
+        backgroundColor = Colors.blue.shade100;
+        textColor = Colors.blue.shade700;
+        break;
+      case 'Delivered':
+        backgroundColor = Colors.green.shade100;
+        textColor = Colors.green.shade700;
+        break;
+      case 'Cancelled':
+        backgroundColor = Colors.red.shade100;
+        textColor = Colors.red.shade700;
+        break;
+      default:
+        backgroundColor = Colors.grey.shade100;
+        textColor = Colors.grey.shade700;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(16),
       ),
-      builder:
-          (context) => DraggableScrollableSheet(
-            initialChildSize: 0.7,
-            maxChildSize: 0.9,
-            minChildSize: 0.5,
-            builder: (context, scrollController) {
-              return Container(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      'Chi tiết đơn hàng #${order.id}',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.text,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        controller: scrollController,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildDetailSection('Thông tin đơn hàng', [
-                              _buildDetailRow('Mã đơn hàng', order.id),
-                              _buildDetailRow(
-                                'Ngày đặt',
-                                _formatDate(order.orderDate),
-                              ),
-                              _buildDetailRow('Trạng thái', order.statusText),
-                              if (order.trackingNumber != null)
-                                _buildDetailRow(
-                                  'Mã vận đơn',
-                                  order.trackingNumber!,
-                                ),
-                              if (order.deliveryDate != null)
-                                _buildDetailRow(
-                                  'Ngày giao',
-                                  _formatDate(order.deliveryDate!),
-                                ),
-                            ]),
-                            const SizedBox(height: 24),
-                            _buildDetailSection('Thông tin giao hàng', [
-                              _buildDetailRow(
-                                'Tên người nhận',
-                                order.customerName,
-                              ),
-                              _buildDetailRow(
-                                'Số điện thoại',
-                                order.customerPhone,
-                              ),
-                              _buildDetailRow('Địa chỉ', order.shippingAddress),
-                            ]),
-                            const SizedBox(height: 24),
-                            _buildDetailSection('Chi tiết thanh toán', [
-                              _buildDetailRow(
-                                'Tiền hàng',
-                                '\$${order.totalAmount.toStringAsFixed(2)}',
-                              ),
-                              _buildDetailRow(
-                                'Phí vận chuyển',
-                                '\$${order.shippingFee.toStringAsFixed(2)}',
-                              ),
-                              if (order.discount > 0)
-                                _buildDetailRow(
-                                  'Giảm giá',
-                                  '-\$${order.discount.toStringAsFixed(2)}',
-                                ),
-                              const Divider(),
-                              _buildDetailRow(
-                                'Tổng cộng',
-                                '\$${order.finalAmount.toStringAsFixed(2)}',
-                                isTotal: true,
-                              ),
-                            ]),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-    );
-  }
-
-  Widget _buildDetailSection(String title, List<Widget> children) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.text,
-          ),
+      child: Text(
+        status,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
         ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Column(children: children),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value, {bool isTotal = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: isTotal ? 16 : 14,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              color: AppColors.text,
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: isTotal ? 16 : 14,
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.w600,
-              color: isTotal ? AppColors.primary : AppColors.text,
-            ),
-          ),
-        ],
       ),
-    );
-  }
-
-  void _trackOrder(Order order) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Theo dõi đơn hàng'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Mã vận đơn: ${order.trackingNumber ?? "N/A"}'),
-                const SizedBox(height: 16),
-                const Text(
-                  'Đơn hàng của bạn đang trên đường giao đến địa chỉ đã đăng ký.',
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Đóng'),
-              ),
-            ],
-          ),
-    );
-  }
-
-  void _cancelOrder(Order order) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Hủy đơn hàng'),
-            content: const Text('Bạn có chắc chắn muốn hủy đơn hàng này?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Không'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Đơn hàng đã được hủy thành công'),
-                    ),
-                  );
-                },
-                child: const Text(
-                  'Hủy đơn',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
-    );
-  }
-
-  void _showReviewDialog(Order order) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Đánh giá đơn hàng'),
-            content: const Text('Tính năng đánh giá sẽ được cập nhật sớm!'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Đóng'),
-              ),
-            ],
-          ),
     );
   }
 }
