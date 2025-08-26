@@ -3,9 +3,11 @@ import 'package:heaven_book_app/screens/Auth/forgot_screen.dart';
 import 'package:heaven_book_app/screens/Auth/login_screen.dart';
 import 'package:heaven_book_app/screens/Auth/register_screen.dart';
 import 'package:heaven_book_app/screens/Auth/reset_screen.dart';
+import 'package:heaven_book_app/screens/Home/detail_review_screen.dart';
 import 'package:heaven_book_app/screens/Home/detail_screen.dart';
 import 'package:heaven_book_app/screens/Home/home_screen.dart';
 import 'package:heaven_book_app/screens/Home/result_screen.dart';
+import 'package:heaven_book_app/screens/Orders/detail_order_screen.dart';
 import 'package:heaven_book_app/screens/Orders/orders_screen.dart';
 import 'package:heaven_book_app/screens/Cart/cart_screen.dart';
 import 'package:heaven_book_app/screens/Profile/profile_screen.dart';
@@ -36,10 +38,12 @@ class MyApp extends StatelessWidget {
         '/main': (context) => const MainScreen(),
         '/home': (context) => const HomeScreen(),
         '/order': (context) => const OrdersScreen(),
+        '/detail-order': (context) => DetailOrderScreen(),
         '/cart': (context) => const CartScreen(),
         '/profile': (context) => const ProfileScreen(),
         '/result': (context) => const ResultScreen(),
         '/detail': (context) => const DetailScreen(),
+        '/detail-review': (context) => DetailReviewScreen(),
       },
     );
   }

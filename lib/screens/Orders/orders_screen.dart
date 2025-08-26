@@ -22,7 +22,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _filteredOrders = List.from(allOrders);
   }
 
@@ -81,6 +81,29 @@ class _OrdersScreenState extends State<OrdersScreen>
     final ordersToFilter =
         _selectedDateRange != null ? _filteredOrders : allOrders;
     return ordersToFilter.where((order) => order['status'] == status).toList();
+  }
+
+  List<Map<String, dynamic>> _getOrdersForTab(String tab) {
+    switch (tab) {
+      case 'Shipping':
+        return getOrdersByStatus('Shipped');
+      case 'Delivered':
+        return getOrdersByStatus('Delivered');
+      case 'Canceled':
+        final ordersToFilter =
+            _selectedDateRange != null ? _filteredOrders : allOrders;
+        return ordersToFilter
+            .where(
+              (order) =>
+                  (order['status'] as String).toLowerCase() == 'canceled' ||
+                  (order['status'] as String).toLowerCase() == 'cancelled',
+            )
+            .toList();
+      case 'Return':
+        return getOrdersByStatus('Return');
+      default:
+        return _selectedDateRange != null ? _filteredOrders : allOrders;
+    }
   }
 
   void _showDateRangeFilter() async {
@@ -528,79 +551,56 @@ class _OrdersScreenState extends State<OrdersScreen>
           ),
           const SizedBox(width: 8),
         ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.background,
-          labelColor: AppColors.background,
-          unselectedLabelColor: Colors.white60,
-          indicatorWeight: 3,
-          isScrollable: false,
-          tabAlignment: TabAlignment.fill,
-          labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-          tabs: [
-            Tab(
-              child: Container(
-                alignment: Alignment.center,
-                child: const Text(
-                  'All',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
-                ),
+      ),
+      body: Container(
+        color: AppColors.background,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Material(
+              color: AppColors.primary,
+              child: TabBar(
+                controller: _tabController,
+                indicatorColor: AppColors.background,
+                labelColor: AppColors.background,
+                unselectedLabelColor: Colors.white60,
+                isScrollable: true,
+                tabs: [
+                  const Tab(child: Text('All', style: TextStyle(fontSize: 16))),
+                  const Tab(
+                    child: Text('Shipping', style: TextStyle(fontSize: 16)),
+                  ),
+                  const Tab(
+                    child: Text('Delivered', style: TextStyle(fontSize: 16)),
+                  ),
+                  const Tab(
+                    child: Text('Canceled', style: TextStyle(fontSize: 16)),
+                  ),
+                  const Tab(
+                    child: Text('Return', style: TextStyle(fontSize: 16)),
+                  ),
+                ],
               ),
             ),
-            Tab(
-              child: Container(
-                alignment: Alignment.center,
-                child: const Text(
-                  'Processing',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-            Tab(
-              child: Container(
-                alignment: Alignment.center,
-                child: const Text(
-                  'Shipped',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
-                ),
-              ),
-            ),
-            Tab(
-              child: Container(
-                alignment: Alignment.center,
-                child: const Text(
-                  'Delivered',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
-                ),
+
+            // Date filter chip
+            _buildDateFilterChip(),
+
+            // Tab bar view
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildOrderList(_getOrdersForTab('All')),
+                  _buildOrderList(_getOrdersForTab('Shipping')),
+                  _buildOrderList(_getOrdersForTab('Delivered')),
+                  _buildOrderList(_getOrdersForTab('Canceled')),
+                  _buildOrderList(_getOrdersForTab('Return')),
+                ],
               ),
             ),
           ],
         ),
-      ),
-      body: Column(
-        children: [
-          // Date filter chip
-          _buildDateFilterChip(),
-
-          // Tab bar view
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildOrderList(
-                  _selectedDateRange != null ? _filteredOrders : allOrders,
-                ),
-                _buildOrderList(getOrdersByStatus('Processing')),
-                _buildOrderList(getOrdersByStatus('Shipped')),
-                _buildOrderList(getOrdersByStatus('Delivered')),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -816,7 +816,13 @@ class _OrdersScreenState extends State<OrdersScreen>
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () => {},
+                    onPressed: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/detail-order',
+                        arguments: order,
+                      );
+                    },
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: AppColors.primary),
                       shape: RoundedRectangleBorder(
