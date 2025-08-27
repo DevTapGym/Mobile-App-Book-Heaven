@@ -14,7 +14,7 @@ class DetailOrderScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.primary, Colors.white],
+            colors: [AppColors.primary, AppColors.background],
             stops: [0.3, 0.3],
           ),
         ),
@@ -27,11 +27,14 @@ class DetailOrderScreen extends StatelessWidget {
                 Card(
                   color: Colors.white,
                   margin: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.fromLTRB(14, 14, 14, 4),
+                        padding: const EdgeInsets.fromLTRB(14, 20, 14, 4),
                         child: _statusSection(),
                       ),
                       Container(
@@ -89,7 +92,6 @@ class DetailOrderScreen extends StatelessWidget {
       {'status': 'Processing', 'time': '18:15 04-12-2024'},
     ];
     bool showAll = false;
-
     return StatefulBuilder(
       builder: (BuildContext context, StateSetter setState) {
         return Column(
@@ -98,109 +100,142 @@ class DetailOrderScreen extends StatelessWidget {
             const Text(
               'Status Order:',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 18,
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
-            if (showAll) ...[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children:
-                    statusHistory.map((status) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 4.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 20,
-                              height: 20,
-                              decoration: const BoxDecoration(
-                                color: Colors.grey,
-                                shape: BoxShape.circle,
+            const SizedBox(height: 12),
+
+            // Timeline card
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
+              child: Column(
+                children: [
+                  // show either single latest or full timeline
+                  if (!showAll) ...[
+                    Row(
+                      children: [
+                        // dot
+                        Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                statusHistory.first['status'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
+                              const SizedBox(height: 4),
+                              Text(
+                                statusHistory.first['time'],
+                                style: TextStyle(color: Colors.black54),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    Column(
+                      children:
+                          statusHistory.asMap().entries.map((entry) {
+                            final idx = entry.key;
+                            final item = entry.value;
+                            final isLast = idx == statusHistory.length - 1;
+                            Color dotColor = Colors.black54;
+                            if ((item['status'] as String).toLowerCase() ==
+                                'delivered') {
+                              dotColor = Colors.green;
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12.0),
+                              child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    status['status'],
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                  SizedBox(
+                                    width: 28,
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          width: 14,
+                                          height: 14,
+                                          decoration: BoxDecoration(
+                                            color: dotColor,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        if (!isLast)
+                                          Container(
+                                            width: 2,
+                                            height: 50,
+                                            color: Colors.black54,
+                                            margin: const EdgeInsets.only(
+                                              top: 6,
+                                            ),
+                                          ),
+                                      ],
                                     ),
                                   ),
-                                  Text(
-                                    status['time'],
-                                    style: TextStyle(color: Colors.grey),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item['status'],
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          item['time'],
+                                          style: TextStyle(
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-              ),
-            ] else ...[
-              Padding(
-                padding: const EdgeInsets.only(left: 10.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: const BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            statusHistory.first['status'],
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            statusHistory.first['time'],
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
+                            );
+                          }).toList(),
                     ),
                   ],
-                ),
-              ),
-            ],
-            Center(
-              child: TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    showAll = !showAll;
-                  });
-                },
-                icon: Icon(
-                  showAll ? Icons.expand_less : Icons.expand_more,
-                  color: AppColors.primary,
-                ),
-                label: Text(
-                  showAll ? 'Show less' : 'Show more',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w800,
+
+                  // show more/less button
+                  const SizedBox(height: 4),
+                  Center(
+                    child: TextButton.icon(
+                      onPressed: () => setState(() => showAll = !showAll),
+                      icon: Icon(
+                        showAll ? Icons.expand_less : Icons.expand_more,
+                        color: AppColors.primary,
+                      ),
+                      label: Text(
+                        showAll ? 'Show less' : 'Show more',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
           ],
@@ -216,23 +251,37 @@ class DetailOrderScreen extends StatelessWidget {
         const Text(
           'Shipping address:',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 8),
-        Row(
-          children: [
-            const Icon(Icons.location_on, color: Colors.blue),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '72/34, Đường Đức Hiền, Tây Thạnh, Tân Phú\nHuyện Hồng Tiến - 073713371',
-                style: const TextStyle(color: Colors.grey),
+        Padding(
+          padding: const EdgeInsets.only(left: 18.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.blue),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Home',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
+              Text(
+                '72/34, Đường Đức Hiền, Tây Thạnh, Tân Phú\nHuyện Hồng Tiến - 073713371',
+                style: const TextStyle(color: Colors.black54),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -268,7 +317,7 @@ class DetailOrderScreen extends StatelessWidget {
         const Text(
           'Order summary',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
@@ -276,10 +325,25 @@ class DetailOrderScreen extends StatelessWidget {
         const SizedBox(height: 8),
         _buildSummaryRow('Subtotal', '510,000 đ'),
         _buildSummaryRow('Shipping', '30,000 đ'),
-        const Text('Discounts:', style: TextStyle(fontWeight: FontWeight.bold)),
-        _buildSummaryRow('• Product Voucher', '-30,000 đ'),
-        _buildSummaryRow('• Shipping Voucher', '-30,000 đ'),
-        _buildSummaryRow('• Member Discount', '-20,000 đ'),
+        Padding(
+          padding: EdgeInsets.only(left: 12),
+          child: Text(
+            'Discounts:',
+            style: TextStyle(fontSize: 16, color: Colors.black54),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: 12),
+          child: _buildSummaryRow('• Product Voucher', '-30,000 đ'),
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: 12),
+          child: _buildSummaryRow('• Shipping Voucher', '-30,000 đ'),
+        ),
+        Padding(
+          padding: EdgeInsets.only(left: 12),
+          child: _buildSummaryRow('• Member Discount', '-20,000 đ'),
+        ),
         const Divider(),
         _buildSummaryRow('Total', '460,000 đ', isBold: true),
       ],
@@ -293,18 +357,41 @@ class DetailOrderScreen extends StatelessWidget {
         const Text(
           'Order details',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             color: Colors.black,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 8),
-        _buildDetailRow('Order number', 'ORD-TI00904001'),
-        _buildDetailRow('Order date', '12/12/2024 14:05'),
-        _buildDetailRow('Payment Method', 'COD'),
-        _buildDetailRow('Payment time', '16/12/2024 16:30'),
-        _buildDetailRow('Delivery time', '16/12/2024 16:30'),
-        TextButton(onPressed: () {}, child: const Text('Export Receipt >')),
+        Padding(
+          padding: EdgeInsets.only(left: 12.0),
+          child: Column(
+            children: [
+              _buildDetailRow('Order number', 'ORD-TI00904001'),
+              _buildDetailRow('Order date', '12/12/2024 14:05'),
+              _buildDetailRow('Payment Method', 'COD'),
+              _buildDetailRow('Payment time', '16/12/2024 16:30'),
+              _buildDetailRow('Delivery time', '16/12/2024 16:30'),
+            ],
+          ),
+        ),
+
+        Center(
+          child: TextButton(
+            onPressed: () {},
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Text(
+                  'Export Receipt',
+                  style: TextStyle(color: AppColors.primaryDark),
+                ),
+                SizedBox(width: 8),
+                Icon(Icons.arrow_forward_ios, color: AppColors.primaryDark),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -318,38 +405,58 @@ class DetailOrderScreen extends StatelessWidget {
     required bool freeBookmark,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: EdgeInsets.only(bottom: 16),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(12.0),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               width: 80,
               height: 120,
-              color: Colors.grey[200],
+              decoration: BoxDecoration(
+                color: Colors.grey[400],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              clipBehavior: Clip.hardEdge,
               child: const Icon(Icons.book, size: 40),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(author, style: TextStyle(color: Colors.grey)),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Text('${price.toString()} đ x $quantity'),
-                      const Spacer(),
-                      Text('${price * quantity} đ'),
-                    ],
-                  ),
-                  if (checkOnDelivery) const Text('• Check on Delivery'),
-                  if (freeBookmark) const Text('• Free Bookmark'),
-                ],
+              child: SizedBox(
+                height: 120,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 2,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(author, style: TextStyle(color: Colors.black54)),
+                        const SizedBox(height: 8),
+                        if (freeBookmark) const Text('• Free Bookmark'),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text('${price.toString()} đ x $quantity'),
+                        const Spacer(),
+                        Text(
+                          '${price * quantity} đ',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -360,15 +467,24 @@ class DetailOrderScreen extends StatelessWidget {
 
   Widget _buildSummaryRow(String label, String value, {bool isBold = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: isBold ? AppColors.primaryDark : Colors.black54,
+              fontSize: 15,
+            ),
+          ),
           Text(
             value,
             style: TextStyle(
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: isBold ? AppColors.primaryDark : Colors.black54,
+              fontSize: 15,
             ),
           ),
         ],
@@ -382,8 +498,14 @@ class DetailOrderScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.black54, fontSize: 15),
+          ),
+          Text(
+            value,
+            style: const TextStyle(color: Colors.black54, fontSize: 15),
+          ),
         ],
       ),
     );

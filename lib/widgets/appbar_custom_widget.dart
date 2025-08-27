@@ -43,7 +43,7 @@ class AppbarCustomWidget extends StatelessWidget
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 24.0,
+                fontSize: 26.0,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.0,
                 shadows: [
