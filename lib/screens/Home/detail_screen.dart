@@ -1,3 +1,4 @@
+import '../../widgets/review_section_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:heaven_book_app/widgets/book_section_widget.dart';
 import '../../themes/app_colors.dart';
@@ -221,7 +222,11 @@ class _DetailScreenState extends State<DetailScreen>
                 Container(height: 12, color: Colors.grey[100]),
 
                 // Reviews section
-                _buildReviewsSection(),
+                ReviewSectionWidget(
+                  reviews: reviews,
+                  bookData: bookData,
+                  formatReviewCount: formatReviewCount,
+                ),
 
                 // Divider 1
                 Container(height: 12, color: Colors.grey[100]),
@@ -782,218 +787,6 @@ class _DetailScreenState extends State<DetailScreen>
           Expanded(
             child: Text(value, style: const TextStyle(color: AppColors.text)),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildReviewsSection() {
-    // Chỉ hiển thị 2 review đầu tiên
-    final displayedReviews = reviews.take(2).toList();
-
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Reviews',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.text,
-                ),
-              ),
-              Row(
-                children: [
-                  Text(
-                    '${bookData['rating']}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.text,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  const Icon(Icons.star, color: Colors.amber, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'review (${formatReviewCount(bookData['reviewCount'])})',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Reviews
-          ...displayedReviews
-              .map(
-                (review) => Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey[200]!),
-                    borderRadius: BorderRadius.circular(12),
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // User info và rating
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: AppColors.primary,
-                            radius: 20,
-                            child: Text(
-                              review['name'][0],
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  review['name'],
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    ...List.generate(
-                                      review['rating'].floor(),
-                                      (i) => const Icon(
-                                        Icons.star,
-                                        color: Colors.amber,
-                                        size: 16,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      review['date'],
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Comment
-                      Text(
-                        review['comment'],
-                        style: TextStyle(color: Colors.grey[700], height: 1.4),
-                      ),
-
-                      // Hình ảnh review (nếu có)
-                      if (review['images'] != null &&
-                          review['images'].isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 96,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            physics:
-                                const BouncingScrollPhysics(), // Thêm hiệu ứng bounce khi kéo
-                            itemCount: review['images'].length,
-                            itemBuilder: (context, imageIndex) {
-                              return Container(
-                                margin: const EdgeInsets.only(right: 12),
-                                width: 96,
-                                height: 96,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(
-                                    12,
-                                  ), // Bo góc to hơn
-                                  border: Border.all(color: Colors.grey[300]!),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Container(
-                                    color: Colors.grey[100],
-                                    child: const Icon(
-                                      Icons.image,
-                                      color: Colors.grey,
-                                      size: 40, // Tăng kích thước icon
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              )
-              .toList(),
-
-          // Nút xem tất cả reviews
-          if (reviews.length > 2)
-            Center(
-              child: TextButton.icon(
-                onPressed: () {
-                  // Navigate to reviews detail page
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Navigating to all reviews...'),
-                      backgroundColor: AppColors.primary,
-                    ),
-                  );
-                },
-                icon: const Text(
-                  'View All Reviews',
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                label: const Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  color: AppColors.primary,
-                  size: 16,
-                ),
-              ),
-            ),
         ],
       ),
     );
