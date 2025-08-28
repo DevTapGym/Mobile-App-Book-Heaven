@@ -37,6 +37,8 @@ class ProfileScreen extends StatelessWidget {
                         margin: EdgeInsets.only(top: 100.0, bottom: 12.0),
                         child: Card(
                           color: Colors.white,
+                          elevation: 8.0,
+                          shadowColor: Colors.black38,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15.0),
                           ),
@@ -189,6 +191,8 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   Card(
                     color: Colors.white,
+                    elevation: 6.0,
+                    shadowColor: Colors.black38,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15.0),
                     ),
