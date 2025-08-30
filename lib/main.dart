@@ -10,7 +10,11 @@ import 'package:heaven_book_app/screens/Home/result_screen.dart';
 import 'package:heaven_book_app/screens/Orders/detail_order_screen.dart';
 import 'package:heaven_book_app/screens/Orders/orders_screen.dart';
 import 'package:heaven_book_app/screens/Cart/cart_screen.dart';
+import 'package:heaven_book_app/screens/Profile/add_address_screen.dart';
+import 'package:heaven_book_app/screens/Profile/change_password_screen.dart';
+import 'package:heaven_book_app/screens/Profile/edit_profile_screen.dart';
 import 'package:heaven_book_app/screens/Profile/profile_screen.dart';
+import 'package:heaven_book_app/screens/Profile/shipping_address_screen.dart';
 import 'package:heaven_book_app/themes/app_colors.dart';
 import 'screens/Auth/onboarding_wrapper.dart';
 import 'screens/Auth/active_screen.dart';
@@ -26,24 +30,33 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Book Heaven App',
-      home: const OnboardingWrapper(),
+      home: const MainScreen(),
       debugShowCheckedModeBanner: false,
       routes: {
+        '/main': (context) => const MainScreen(),
+
         '/onboarding': (context) => const OnboardingWrapper(),
         '/login': (context) => const LoginScreen(),
         '/register': (context) => const RegisterScreen(),
         '/forgot-password': (context) => const ForgotScreen(),
         '/reset-password': (context) => const ResetScreen(),
         '/active-screen': (context) => const ActiveScreen(),
-        '/main': (context) => const MainScreen(),
+
         '/home': (context) => const HomeScreen(),
-        '/order': (context) => const OrdersScreen(),
-        '/detail-order': (context) => DetailOrderScreen(),
-        '/cart': (context) => const CartScreen(),
-        '/profile': (context) => const ProfileScreen(),
         '/result': (context) => const ResultScreen(),
         '/detail': (context) => const DetailScreen(),
         '/detail-review': (context) => DetailReviewScreen(),
+
+        '/order': (context) => const OrdersScreen(),
+        '/detail-order': (context) => DetailOrderScreen(),
+
+        '/cart': (context) => const CartScreen(),
+
+        '/profile': (context) => const ProfileScreen(),
+        '/edit-profile': (context) => const EditProfileScreen(),
+        '/shipping-address': (context) => const ShippingAddressScreen(),
+        '/add-address': (context) => const AddAddressScreen(),
+        'change-password': (context) => const ChangePasswordScreen(),
       },
     );
   }
