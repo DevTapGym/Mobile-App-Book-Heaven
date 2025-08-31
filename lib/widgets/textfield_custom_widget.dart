@@ -94,7 +94,7 @@ class LabelTextField extends StatelessWidget {
           style: const TextStyle(
             fontSize: 16.0,
             fontWeight: FontWeight.w500,
-            color: Colors.black87,
+            color: AppColors.black60,
           ),
         ),
         const SizedBox(height: 8.0),

@@ -147,7 +147,9 @@ class ProfileScreen extends StatelessWidget {
                                     fontSize: 17,
                                   ),
                                 ),
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.pushNamed(context, '/reward');
+                                },
                               ),
                               ListTile(
                                 leading: Icon(
