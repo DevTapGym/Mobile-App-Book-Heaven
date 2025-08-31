@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:heaven_book_app/themes/app_colors.dart';
 import 'package:heaven_book_app/widgets/appbar_custom_widget.dart';
-import 'package:heaven_book_app/widgets/label_text_field.dart';
+import 'package:heaven_book_app/widgets/textfield_custom_widget.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   const ChangePasswordScreen({super.key});

@@ -12,8 +12,10 @@ import 'package:heaven_book_app/screens/Orders/orders_screen.dart';
 import 'package:heaven_book_app/screens/Cart/cart_screen.dart';
 import 'package:heaven_book_app/screens/Profile/add_address_screen.dart';
 import 'package:heaven_book_app/screens/Profile/change_password_screen.dart';
+import 'package:heaven_book_app/screens/Profile/detail_voucher_screen.dart';
 import 'package:heaven_book_app/screens/Profile/edit_profile_screen.dart';
 import 'package:heaven_book_app/screens/Profile/profile_screen.dart';
+import 'package:heaven_book_app/screens/Profile/reward_screen.dart';
 import 'package:heaven_book_app/screens/Profile/shipping_address_screen.dart';
 import 'package:heaven_book_app/themes/app_colors.dart';
 import 'screens/Auth/onboarding_wrapper.dart';
@@ -57,6 +59,8 @@ class MyApp extends StatelessWidget {
         '/shipping-address': (context) => const ShippingAddressScreen(),
         '/add-address': (context) => const AddAddressScreen(),
         'change-password': (context) => const ChangePasswordScreen(),
+        '/reward': (context) => RewardScreen(),
+        '/detail-voucher': (context) => const DetailVoucherScreen(),
       },
     );
   }
