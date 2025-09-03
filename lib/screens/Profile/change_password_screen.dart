@@ -29,7 +29,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       _hasNumber = _newPasswordController.text.contains(RegExp(r'[0-9]'));
       _hasMinLength = _newPasswordController.text.length >= 8;
 
-      // Đếm số điều kiện thỏa mãn
       int conditionsMet = 0;
       if (_hasUppercase) conditionsMet++;
       if (_hasNumber) conditionsMet++;
@@ -54,7 +53,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           break;
       }
 
-      // Kiểm tra mật khẩu hợp lệ (thỏa cả 3 điều kiện và khớp với confirm password)
       _isPasswordValid =
           _hasUppercase &&
           _hasNumber &&
@@ -260,12 +258,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed:
-                          _isPasswordValid
-                              ? () {
-                                // Handle password change logic here
-                              }
-                              : null,
+                      onPressed: _isPasswordValid ? () {} : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         padding: EdgeInsets.symmetric(vertical: 16.0),

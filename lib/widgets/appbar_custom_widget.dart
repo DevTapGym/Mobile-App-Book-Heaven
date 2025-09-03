@@ -4,8 +4,17 @@ import 'package:heaven_book_app/themes/app_colors.dart';
 class AppbarCustomWidget extends StatelessWidget
     implements PreferredSizeWidget {
   final String title;
+  final bool hasActionButton;
+  final String? actionText;
+  final VoidCallback? onActionPressed;
 
-  const AppbarCustomWidget({super.key, required this.title});
+  const AppbarCustomWidget({
+    super.key,
+    required this.title,
+    this.hasActionButton = false,
+    this.actionText,
+    this.onActionPressed,
+  });
 
   @override
   Size get preferredSize => const Size.fromHeight(200.0);
@@ -43,19 +52,31 @@ class AppbarCustomWidget extends StatelessWidget
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 26.0,
+                fontSize: 24.0,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.0,
                 shadows: [
                   Shadow(
                     color: Colors.black26,
                     offset: Offset(1.0, 1.0),
-                    blurRadius: 3.0,
+                    blurRadius: 4.0,
                   ),
                 ],
               ),
             ),
           ),
+          if (hasActionButton && actionText != null && onActionPressed != null)
+            TextButton(
+              onPressed: onActionPressed,
+              child: Text(
+                actionText!,
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
         ],
       ),
     );
