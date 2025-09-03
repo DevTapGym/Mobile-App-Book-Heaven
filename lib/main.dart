@@ -3,6 +3,7 @@ import 'package:heaven_book_app/screens/Auth/forgot_screen.dart';
 import 'package:heaven_book_app/screens/Auth/login_screen.dart';
 import 'package:heaven_book_app/screens/Auth/register_screen.dart';
 import 'package:heaven_book_app/screens/Auth/reset_screen.dart';
+import 'package:heaven_book_app/screens/Cart/check_out_screen.dart';
 import 'package:heaven_book_app/screens/Home/detail_review_screen.dart';
 import 'package:heaven_book_app/screens/Home/detail_screen.dart';
 import 'package:heaven_book_app/screens/Home/home_screen.dart';
@@ -53,6 +54,7 @@ class MyApp extends StatelessWidget {
         '/detail-order': (context) => DetailOrderScreen(),
 
         '/cart': (context) => const CartScreen(),
+        '/check-out': (context) => const CheckOutScreen(),
 
         '/profile': (context) => const ProfileScreen(),
         '/edit-profile': (context) => const EditProfileScreen(),
